@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GHOST_ARCADE // UNBLOCKED</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #000a00;
+    font-family: monospace;
+    color: #00cc33;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #000a00; }
+  ::-webkit-scrollbar-thumb { background: #003a00; border-radius: 2px; }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(0,8,0,0.97);
+    border-bottom: 1px solid #003300;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    backdrop-filter: blur(8px);
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-brand-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #00ff41;
+    text-shadow: 0 0 12px #00ff41;
+    letter-spacing: 3px;
+  }
+  .nav-brand-sub {
+    font-size: 9px;
+    color: #003a00;
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2px;
+    list-style: none;
+  }
+  .nav-links button {
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 6px 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #005500;
+    cursor: pointer;
+    transition: color 0.1s, border-color 0.1s;
+  }
+  .nav-links button.active,
+  .nav-links button:hover {
+    color: #00ff41;
+    border-bottom-color: #00ff41;
+    background: rgba(0,255,65,0.07);
+  }
+  .nav-hint { font-size: 9px; color: #003a00; letter-spacing: 2px; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+  }
+  #static-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,10,0,0.65) 100%);
+  }
+  .hero-scanline {
+    position: absolute;
+    left: 0; right: 0;
+    height: 3px;
+    background: rgba(0,255,65,0.45);
+    animation: scanDown 3s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes scanDown {
+    0%   { top: -2%; }
+    100% { top: 102%; }
+  }
+  .hero-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+  .hero-title {
+    font-weight: 900;
+    font-size: clamp(28px, 5vw, 48px);
+    letter-spacing: 6px;
+    color: #00ff41;
+    text-shadow: 0 0 20px #00ff41, 0 0 60px #00ff4140, 3px 0 #ff004060, -3px 0 #00ffff40;
+    text-transform: uppercase;
+  }
+  .hero-sub {
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: #fff;
+    text-shadow: 0 0 10px #ffffff80;
+    background: rgba(0,0,0,0.5);
+    padding: 4px 18px;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    background: rgba(0,12,0,0.95);
+    border-bottom: 1px solid #003300;
+  }
+  .stat-item {
+    padding: 10px 36px;
+    text-align: center;
+    border-right: 1px solid #002200;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-val {
+    font-size: 20px;
+    color: #00ff41;
+    text-shadow: 0 0 8px #00ff41;
+    letter-spacing: 2px;
+  }
+  .stat-lbl {
+    font-size: 9px;
+    color: #005500;
+    letter-spacing: 3px;
+    margin-top: 2px;
+  }
+
+  /* ── ANNOUNCE ── */
+  .announce {
+    background: rgba(0,255,65,0.05);
+    border-bottom: 1px solid #003300;
+    padding: 8px 24px;
+    font-size: 11px;
+    color: #00aa44;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  .announce .new { color: #ffaa00; }
+  .announce kbd {
+    background: #001a00;
+    border: 1px solid #003300;
+    padding: 1px 5px;
+    font-family: monospace;
+    font-size: 10px;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 20px;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-hdr {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .section-hdr-label {
+    font-size: 11px;
+    color: #005500;
+    letter-spacing: 4px;
+  }
+  .section-hdr-line {
+    flex: 1;
+    height: 1px;
+    background: #002200;
+  }
+  .section-hdr-count {
+    font-size: 9px;
+    color: #003300;
+    letter-spacing: 2px;
+  }
+
+  /* ── GAME GRID ── */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .game-card {
+    background: rgba(0,10,0,0.85);
+    border: 1px solid #003300;
+    border-radius: 4px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+  }
+  .game-card:hover {
+    background: rgba(0,20,0,0.95);
+  }
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .card-tag {
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 2px 6px;
+    border: 1px solid;
+  }
+  .card-status {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .card-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #00ff41;
+    text-shadow: 0 0 8px #00ff4180;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    transition: color 0.15s;
+    min-height: 22px;
+  }
+  .card-desc {
+    font-size: 11px;
+    color: #5a8a5a;
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-hotkey {
+    font-size: 9px;
+    background: #001a00;
+    border: 1px solid #003300;
+    padding: 3px 8px;
+    color: #00aa44;
+    letter-spacing: 1px;
+  }
+  .card-launch {
+    font-size: 10px;
+    color: #005500;
+    transition: color 0.15s;
+  }
+  .game-card:hover .card-launch { color: #00ff41; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { display: flex; flex-direction: column; gap: 14px; }
+
+  .panel {
+    background: rgba(0,10,0,0.9);
+    border: 1px solid #003300;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .panel-header {
+    background: #001500;
+    border-bottom: 1px solid #003300;
+    padding: 7px 12px;
+    font-size: 9px;
+    color: #005500;
+    letter-spacing: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .panel-body { padding: 10px 12px; }
+
+  /* ── TERMINAL ── */
+  #terminal-output {
+    font-size: 10px;
+    line-height: 1.8;
+    color: #00cc33;
+    min-height: 120px;
+  }
+  #terminal-output .prompt { color: #003a00; }
+  #terminal-output .line-text { color: #00aa44; }
+  #terminal-output .line-text.active { color: #00ff41; }
+  .cursor {
+    display: inline-block;
+    width: 7px;
+    height: 12px;
+    background: #00ff41;
+    vertical-align: middle;
+    animation: blink 0.8s step-end infinite;
+    margin-left: 1px;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ── HOTKEYS ── */
+  .hotkey-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .hk-key {
+    font-size: 9px;
+    background: #001a00;
+    border: 1px solid #003300;
+    padding: 2px 6px;
+    color: #00aa44;
+    letter-spacing: 1px;
+  }
+  .hk-val { font-size: 9px; color: #005500; }
+
+  /* ── NET STATUS ── */
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 7px;
+    font-size: 9px;
+  }
+  .status-lbl { color: #005500; }
+  .status-val { letter-spacing: 1px; }
+
+  /* ── MOTD ── */
+  .motd {
+    background: rgba(0,255,65,0.03);
+    border: 1px solid #003300;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 10px;
+    color: #005500;
+    line-height: 1.8;
+  }
+  .motd-lbl {
+    color: #00aa44;
+    letter-spacing: 2px;
+    font-size: 9px;
+    margin-bottom: 6px;
+  }
+  .motd-quote { color: #005a00; }
+  .motd-author { color: #003300; font-size: 9px; margin-top: 6px; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid #002200;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #003a00;
+    letter-spacing: 2px;
+  }
+
+  /* ── GLITCH TITLE ── */
+  @keyframes glitch1 { 0%,90%,100%{clip-path:none;transform:none} 92%{clip-path:inset(20% 0 60% 0);transform:translateX(-3px)} 94%{clip-path:inset(50% 0 30% 0);transform:translateX(3px)} 96%{clip-path:inset(80% 0 5% 0);transform:translateX(-2px)} 98%{clip-path:none;transform:none} }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-brand">
+    <span class="nav-brand-title">◈ GHOST_ARCADE</span>
+    <span class="nav-brand-sub">// UNBLOCKED</span>
+  </div>
+  <ul class="nav-links" id="nav-links">
+    <li><button class="active" data-filter="ALL">HOME</button></li>
+    <li><button data-filter="ARCADE">ARCADE</button></li>
+    <li><button data-filter="PUZZLE">PUZZLE</button></li>
+    <li><button data-filter="STRATEGY">STRATEGY</button></li>
+    <li><button data-filter="RUNNER">RUNNER</button></li>
+    <li><button data-filter="NEW">NEW</button></li>
+  </ul>
+  <span class="nav-hint">CTRL+D TO BOOKMARK</span>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <canvas id="static-canvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="hero-scanline"></div>
+  <div class="hero-content">
+    <div class="hero-title">GHOST_ARCADE</div>
+    <div class="hero-sub">UNBLOCKED &nbsp;·&nbsp; UNTRACEABLE &nbsp;·&nbsp; UNRESTRICTED</div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-val">9</div><div class="stat-lbl">GAMES ONLINE</div></div>
+  <div class="stat-item"><div class="stat-val" id="stat-players">312</div><div class="stat-lbl">PLAYERS NOW</div></div>
+  <div class="stat-item"><div class="stat-val" id="stat-ping">12ms</div><div class="stat-lbl">SERVER PING</div></div>
+  <div class="stat-item"><div class="stat-val">99.9%</div><div class="stat-lbl">UPTIME</div></div>
+</div>
+
+<!-- ANNOUNCE -->
+<div class="announce">
+  <span class="new">▲ NEW: </span>
+  Gravity Flip added &nbsp;·&nbsp; All games load in-browser, no installs &nbsp;·&nbsp;
+  Press <kbd>CTRL+D</kbd> to bookmark this page
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- GAME GRID -->
+  <div>
+    <div class="section-hdr">
+      <span class="section-hdr-label">► ALL GAMES</span>
+      <div class="section-hdr-line"></div>
+      <span class="section-hdr-count" id="game-count">9 AVAILABLE</span>
+    </div>
+    <div class="game-grid" id="game-grid"></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Terminal -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="dot" style="background:#ff4444"></span>
+        <span class="dot" style="background:#ffaa00"></span>
+        <span class="dot" style="background:#00ff41"></span>
+        <span style="margin-left:6px">TERMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div id="terminal-output"></div>
+      </div>
+    </div>
+
+    <!-- Hotkeys -->
+    <div class="panel">
+      <div class="panel-header">► HOTKEYS</div>
+      <div class="panel-body">
+        <div class="hotkey-row"><span class="hk-key">ESC</span><span class="hk-val">PAUSE GAME</span></div>
+        <div class="hotkey-row"><span class="hk-key">F11</span><span class="hk-val">FULLSCREEN</span></div>
+        <div class="hotkey-row"><span class="hk-key">CTRL+D</span><span class="hk-val">BOOKMARK</span></div>
+        <div class="hotkey-row"><span class="hk-key">CTRL+R</span><span class="hk-val">RELOAD</span></div>
+        <div class="hotkey-row" style="margin-bottom:0"><span class="hk-key">ALT+TAB</span><span class="hk-val">QUICK SWITCH</span></div>
+      </div>
+    </div>
+
+    <!-- Net Status -->
+    <div class="panel">
+      <div class="panel-header">► NET STATUS</div>
+      <div class="panel-body">
+        <div class="status-row"><span class="status-lbl">PROXY</span><span class="status-val" style="color:#00ff41;text-shadow:0 0 6px #00ff4160">● ACTIVE</span></div>
+        <div class="status-row"><span class="status-lbl">ENCRYPT</span><span class="status-val" style="color:#00aaff;text-shadow:0 0 6px #00aaff60">● AES-256</span></div>
+        <div class="status-row"><span class="status-lbl">FILTER</span><span class="status-val" style="color:#00ff41;text-shadow:0 0 6px #00ff4160">● BYPASSED</span></div>
+        <div class="status-row" style="margin-bottom:0"><span class="status-lbl">LOG</span><span class="status-val" style="color:#ffaa00;text-shadow:0 0 6px #ffaa0060">● DISABLED</span></div>
+      </div>
+    </div>
+
+    <!-- MOTD -->
+    <div class="motd">
+      <div class="motd-lbl">► MSG OF THE DAY</div>
+      <div class="motd-quote">"The net interprets censorship as damage and routes around it."</div>
+      <div class="motd-author">— John Gilmore</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span>◈ GHOST_ARCADE // UNBLOCKED</span>
+  <span>NO LOGS · NO TRACKING · NO BS</span>
+  <span>SESSION: ANONYMOUS</span>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── GAME DATA ── */
+  const GAMES = [
+    { title:'HACK_TYPER',    desc:'Type anything. Look like a hacker. Zero skill required.',          tag:'SIMULATION', color:'#00ff41', hotkey:'CTRL+H', status:'ONLINE', filters:['ALL'] },
+    { title:'SNAKE_CLASSIC', desc:'Retro terminal snake. Eat. Grow. Die. Repeat.',                    tag:'ARCADE',     color:'#00aaff', hotkey:'CTRL+S', status:'ONLINE', filters:['ALL','ARCADE'] },
+    { title:'2048_HEX',      desc:'Merge hex tiles. Get to 0xFFFF before your brain melts.',          tag:'PUZZLE',     color:'#aa44ff', hotkey:'CTRL+2', status:'ONLINE', filters:['ALL','PUZZLE'] },
+    { title:'PONG_v2',       desc:'Classic vs AI. The AI cheats. You\'ve been warned.',               tag:'ARCADE',     color:'#00aaff', hotkey:'CTRL+P', status:'ONLINE', filters:['ALL','ARCADE'] },
+    { title:'VOID_RUN',      desc:'Infinite runner. Side-scroll through a neon void. Don\'t crash.', tag:'RUNNER',     color:'#ffaa00', hotkey:'CTRL+V', status:'ONLINE', filters:['ALL','RUNNER'] },
+    { title:'MINESWEEP_X',   desc:'Minesweeper but the mines move. Skill issue if you lose.',         tag:'PUZZLE',     color:'#aa44ff', hotkey:'CTRL+M', status:'BETA',   filters:['ALL','PUZZLE','NEW'] },
+    { title:'TETRIS_0x',     desc:'Classic blocks. Infinite mode. Speed ramps up fast.',              tag:'ARCADE',     color:'#00aaff', hotkey:'CTRL+T', status:'ONLINE', filters:['ALL','ARCADE'] },
+    { title:'GRAVITY_FLIP',  desc:'Flip gravity to dodge obstacles. Two-button game, zero chill.',    tag:'RUNNER',     color:'#ffaa00', hotkey:'CTRL+G', status:'ONLINE', filters:['ALL','RUNNER','NEW'] },
+    { title:'CHESS_NULL',    desc:'Play chess vs an engine tuned to make you feel dumb.',             tag:'STRATEGY',   color:'#ff4466', hotkey:'CTRL+C', status:'ONLINE', filters:['ALL','STRATEGY'] },
+  ];
+
+  const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+
+  /* ── TV STATIC ── */
+  const canvas = document.getElementById('static-canvas');
+  const ctx = canvas.getContext('2d');
+  function resizeCanvas() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  function drawStatic() {
+    const w = canvas.width, h = canvas.height;
+    const img = ctx.createImageData(w, h);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = Math.random() * 255 | 0;
+      d[i] = v; d[i+1] = v; d[i+2] = v; d[i+3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    requestAnimationFrame(drawStatic);
+  }
+  drawStatic();
+
+  /* ── STATS TICK ── */
+  setInterval(function () {
+    document.getElementById('stat-players').textContent = String(312 + (Math.random() * 14 | 0));
+    document.getElementById('stat-ping').textContent    = (12 + (Math.random() * 5 | 0)) + 'ms';
+  }, 1000);
+
+  /* ── TERMINAL ── */
+  const TERM_LINES = [
+    'CONNECTING TO GAME SERVER...',
+    'AUTH: ANONYMOUS [OK]',
+    'SESSION STARTED: ghost_9x01',
+    'LOADED: 9 GAMES AVAILABLE',
+    'WARNING: SCHOOL FILTER BYPASSED',
+    'P2P RELAY: ACTIVE',
+    'PING: 12ms | UPTIME: 99.9%',
+    'READY. CHOOSE YOUR GAME.',
+  ];
+  const termEl = document.getElementById('terminal-output');
+  let termIdx = 0;
+
+  function pushTermLine() {
+    if (termIdx >= TERM_LINES.length) return;
+    const line = TERM_LINES[termIdx++];
+    const isLast = termIdx >= TERM_LINES.length;
+
+    // Remove cursor from previous last line
+    const prevCursor = termEl.querySelector('.cursor');
+    if (prevCursor) prevCursor.remove();
+
+    const div = document.createElement('div');
+    div.innerHTML =
+      '<span class="prompt">root@ghost:~$ </span>' +
+      '<span class="line-text active">' + line + '</span>' +
+      (!isLast ? '<span class="cursor"></span>' : '');
+    termEl.appendChild(div);
+
+    // Dim previous lines
+    termEl.querySelectorAll('.line-text.active').forEach(function (el, i, arr) {
+      if (i < arr.length - 1) el.classList.remove('active');
+    });
+
+    if (!isLast) setTimeout(pushTermLine, 900);
+  }
+  setTimeout(pushTermLine, 400);
+
+  /* ── GAME CARDS ── */
+  function buildCard(game) {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    card.dataset.filters = JSON.stringify(game.filters);
+
+    const statusColor = game.status === 'BETA' ? '#ffaa00' : '#005500';
+
+    card.innerHTML =
+      '<div class="card-top">' +
+        '<span class="card-tag" style="color:' + game.color + ';border-color:' + game.color + ';text-shadow:0 0 6px ' + game.color + '">' + game.tag + '</span>' +
+        '<span class="card-status" style="color:' + statusColor + '">● ' + game.status + '</span>' +
+      '</div>' +
+      '<div class="card-title" data-original="' + game.title + '">' + game.title + '</div>' +
+      '<div class="card-desc">' + game.desc + '</div>' +
+      '<div class="card-footer">' +
+        '<span class="card-hotkey">' + game.hotkey + '</span>' +
+        '<span class="card-launch">LAUNCH →</span>' +
+      '</div>';
+
+    /* glitch effect on hover */
+    const titleEl = card.querySelector('.card-title');
+    let glitchRAF = null;
+
+    card.addEventListener('mouseenter', function () {
+      card.style.borderColor = game.color;
+      card.style.boxShadow   = '0 0 18px ' + game.color + '33, inset 0 0 12px #00110033';
+      titleEl.style.color      = game.color;
+      titleEl.style.textShadow = '0 0 12px ' + game.color;
+      startGlitch(titleEl, game.title);
+    });
+
+    card.addEventListener('mouseleave', function () {
+      card.style.borderColor = '#003300';
+      card.style.boxShadow   = '';
+      titleEl.style.color      = '#00ff41';
+      titleEl.style.textShadow = '0 0 8px #00ff4180';
+      cancelAnimationFrame(glitchRAF);
+      titleEl.textContent = game.title;
+    });
+
+    function startGlitch(el, original) {
+      let iter = 0;
+      function step() {
+        if (iter > original.length) { el.textContent = original; return; }
+        el.textContent = original.split('').map(function (c, i) {
+          if (c === '_' || c === ' ') return c;
+          if (i < iter) return original[i];
+          return GLITCH_CHARS[Math.random() * GLITCH_CHARS.length | 0];
+        }).join('');
+        iter++;
+        glitchRAF = setTimeout(step, 40);
+      }
+      step();
+    }
+
+    return card;
+  }
+
+  const grid = document.getElementById('game-grid');
+  GAMES.forEach(function (g) { grid.appendChild(buildCard(g)); });
+
+  /* ── FILTER ── */
+  const navButtons = document.querySelectorAll('#nav-links button');
+  navButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      navButtons.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      let visible = 0;
+      grid.querySelectorAll('.game-card').forEach(function (card) {
+        const filters = JSON.parse(card.dataset.filters);
+        const show = filter === 'ALL' || filters.indexOf(filter) !== -1;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('game-count').textContent = visible + ' AVAILABLE';
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
